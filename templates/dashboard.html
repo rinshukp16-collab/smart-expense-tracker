@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Expense Analytics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #ffffff;
+            text-align: center;
+            padding: 10px;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            margin: 10px auto;
+            position: relative;
+            height: 350px
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            color: #5d5d5d;
+            font-weight: 400;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Expense Analytics Dashboard</h1>
+
+    <div class="chart-container">
+        <canvas id="myChart"></canvas>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="barChart"></canvas>
+    </div>
+
+    <script>
+        const labelsData = {{ labels | tojson | safe }};
+        const valuesData = {{ values | tojson | safe }};
+
+        // Pie Chart
+        const ctx1 = document.getElementById('myChart').getContext('2d');
+        new Chart(ctx1, {
+            type: 'pie',
+            data: {
+                labels: labelsData,
+                datasets: [{
+                    data: valuesData,
+                    backgroundColor: ['#b8e0d2', '#d6e2e9', '#f2a6a6', '#eed9c4', '#e8dff5']
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        // bar chart
+        const ctx2 = document.getElementById('barChart').getContext('2d');
+        new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: labelsData,
+                datasets: [{
+                    label: 'Expense Amount',
+                    data: valuesData,
+                    backgroundColor: '#d6e2e9'
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Expense Tracker</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #fdf6f0;
+            margin: 50px;
+        }
+
+        .container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            max-width: 900px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #5d5d5d;
+            text-align: center;
+            font-weight: 300;
+        }
+
+        .sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 1001;
+            top: 0;
+            right: 0;
+            background-color: #ffffff;
+            overflow-x: hidden;
+            transition: 0.5s;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .closebtn {
+            padding: 10px 25px;
+            font-size: 36px;
+            text-decoration: none;
+            color: #f2a6a6;
+            display: block;
+        }
+
+        .analytics-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #b8e0d2;
+            color: #4a7c6d;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        iframe {
+            width: 100%;
+            height: 90%;
+            border: none;
+        }
+
+        .add-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        input, select {
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            background-color: #fafafa;
+        }
+
+        button.add-btn {
+            padding: 12px 25px;
+            background-color: #b8e0d2;
+            color: #4a7c6d;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th {
+            background-color: #d6e2e9;
+            color: #5d7a8c;
+            padding: 15px;
+            text-align: left;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #777;
+        }
+
+        .cat-tag {
+            background: #f0f0f0;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: #5d7a8c;
+        }
+
+        .delete-btn {
+            color: #f2a6a6;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .total-box {
+            margin-top: 25px;
+            font-size: 1.4rem;
+            font-weight: bold;
+            text-align: right;
+            color: #88b0a5;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+    </style>
+</head>
+
+<body>
+    <a href="{{ url_for('logout') }}" style="float: right; margin: 20px; color: #f2a6a6; text-decoration: none; font-weight: bold;">Logout 🚪</a>
+    <button class="analytics-btn" onclick="openNav()">📊 Analytics</button>
+
+    <div id="sideDashboard" class="sidebar">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+        <iframe src="/dashboard"></iframe>
+    </div>
+
+    <div class="container">
+        <h1>Smart Expense Tracker</h1>
+
+        {% if over_budget %}
+        <div style="text-align:center; margin-bottom: 20px; background: #f9f9f9; padding: 15px; border-radius: 15px;">
+        <form action="/update_budget" method="POST" style="display: inline-block;">
+            <label style="color: #5d5d5d;">Monthly Budget: </label>
+            <input type="number" name="budget" value="{{ buget_limit }}" style="width: 100px; padding: 5px; border: 1px solid #add;">
+            <button type="submit" style="background-color: #88b0a5; color: white: boarder: none; padding: 6px 12px; boarder-radius: 8px; cursor: pointer; font-size: 0.9;">Update</button>
+            </form>
+        </div>
+        {% endif %}
+
+        <form action="/add" method="POST" class="add-form">
+            <input type="text" name="item" placeholder="Item Name" required>
+            <input type="number" step="0.01" name="amount" placeholder="Amount (₹)" required>
+            
+            <select name="category" required>
+                <option value="" disabled selected>Select Category</option>
+                <option value="Food">🍔 Food</option>
+                <option value="Travel">🚗 Travel</option>
+                <option value="Shopping">🛍️ Shopping</option>
+                <option value="Bills">🧾 Bills</option>
+                <option value="Health">🏥 Health</option>
+                <option value="Savings">💰 Savings</option>
+                <option value="Other">✨ Other</option>
+            </select>
+
+            <button type="submit" class="add-btn">Add Item</button>
+        </form>
+
+        <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="Quick Search (Item or Category)..." style="width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 12px; border: 1px solid #ddd; box-sizing: border-box;">
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="expenseTableBody">
+                {% for expense in expenses %}
+                <tr>
+                    <td>{{ expense.item }}</td>
+                    <td><span class="cat-tag">{{ expense.category }}</span></td>
+                    <td>₹{{ expense.amount }}</td>
+                    <td>{{ expense.date.strftime('%d %B %Y') }}</td> 
+                    <td>
+                        <a href="/edit/{{ expense.id }}" style="color: #88b0a5; text-decoration: none; font-weight: bold; margin-right: 10px;">Edit</a>
+                        <a href="/delete/{{ expense.id }}" class="delete-btn" onclick="return confirm('Delete this item?')">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a href="/export/csv" style="background-color: #d6e2e9; color: #5d7a8c; padding: 10px 15px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 0.9rem;">
+                    📥 Download CSV
+                </a>
+                <button onclick="window.print()" style="background-color: #f2a6a6; color: white; padding: 10px 15px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 0.9rem; margin-left: 10px;">
+                    📄 Save as PDF
+                </button>
+            </div>
+
+            <div class="total-box">
+                Total Spent: ₹{{ total }}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openNav() {
+            document.getElementById("sideDashboard").style.width = "500px";
+        }
+
+        function closeNav() {
+            document.getElementById("sideDashboard").style.width = "0";
+        }
+
+    
+        function searchTable() {
+            var input = document.getElementById("searchInput");
+            var filter = input.value.toUpperCase();
+            var tableBody = document.getElementById("expenseTableBody");
+            var tr = tableBody.getElementsByTagName("tr");
+
+            for (var i = 0; i < tr.length; i++) {
+                var tdItem = tr[i].getElementsByTagName("td")[0]; // Item column
+                var tdCat = tr[i].getElementsByTagName("td")[1];  // Category column
+                
+                if (tdItem && tdCat) {
+                    var txtItem = tdItem.textContent || tdItem.innerText;
+                    var txtCat = tdCat.textContent || tdCat.innerText;
+                    
+                    if (txtItem.toUpperCase().indexOf(filter) > -1 || txtCat.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
