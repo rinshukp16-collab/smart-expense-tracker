@@ -5,6 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import csv
 import io
+import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'my-secret-key-123'
@@ -157,6 +158,6 @@ def export_csv():
         writer.writerow([exp.item, exp.category, exp.amount, exp.date.strftime('%Y-%m-%d')])
     output.seek(0)
     return Response(output, mimetype="text/csv", headers={"Content-Disposition": "attachment;filename=expenses.csv"})
-
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host='0.0.0.0', port=port)
